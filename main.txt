@@ -1,0 +1,34 @@
+import pandas a spd
+import re
+
+
+with open('modsec_audit_1.log','r') as file:
+
+	data=file.readLines()
+
+
+uris=r'\[uri\s+"(.*?)"\]'
+msgs=r'\[msg\s+"(.*?)"\]'
+ids=r'\[id\s*"\d+"\]'
+file=r'\[file "(.*?)"]'
+
+
+file_uri=[re.search(uris,line).group(1) if re.search(uris,line) else '' for line in data]
+
+m=[re.search(msgs,line).group() if re.search(msgs,line) else '' for line in data]
+
+id=[re.search(ids,line).group() if re.search(ids,line) else '' for line in data]
+
+file_path=[re.search(file,line).group() if re.search(file,line) else '' for line in data]
+
+
+df1=pd.DataFrame(file_uri,columns=['URI'])
+df2=pd.DataFrame(m,columns=['MESSAGE'])
+df3=pd.DataFrame(id,columns=['ID'])
+df4=pd.DataFrame(file_path,columns=['FILE_PATH'])
+
+
+final=pd.concat([df1,df2,df3,df4],axis=1)
+
+final.dropna(inplace=True)
+print(final)
