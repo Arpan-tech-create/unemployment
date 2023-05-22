@@ -32,3 +32,22 @@ final=pd.concat([df1,df2,df3,df4],axis=1)
 
 final.dropna(inplace=True)
 print(final)
+
+
+
+import pandas as pd
+
+# Read the CSV file into a pandas DataFrame
+data = pd.read_csv('sample_data.csv')
+
+# Group the data by IP address and count the number of messages
+ip_message_counts = data.groupby('ip_address')['messages'].count()
+
+# Filter IP addresses with five or more messages
+filtered_ips = ip_message_counts[ip_message_counts >= 5]
+
+# Create a new DataFrame for filtered IP addresses and messages
+filtered_data = data[data['ip_address'].isin(filtered_ips.index)][['ip_address', 'messages']]
+
+# Print the new DataFrame
+print(filtered_data)
