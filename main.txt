@@ -51,3 +51,4 @@ filtered_data = data[data['ip_address'].isin(filtered_ips.index)][['ip_address',
 
 # Print the new DataFrame
 print(filtered_data)
+filtered_data.to_csv('MYDATA.csv')
