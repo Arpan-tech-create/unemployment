@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Date-wise Counts</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div>
+        From: <input type="date" id="from-date">
+        To: <input type="date" id="to-date">
+        <button onclick="updateChart()">Update Chart</button>
+    </div>
+    <div id="container"></div>
+
+    <script>
+        var originalData = {{ original_data|tojson }};
+
+        function updateChart() {
+            var fromDate = document.getElementById('from-date').value;
+            var toDate = document.getElementById('to-date').value;
+
+            // Filter the original data based on the selected date range
+            var filteredData = originalData.filter(function(item) {
+                return item.name >= fromDate && item.name <= toDate;
+            });
+
+            // Prepare the data for Highcharts
+            var seriesData = filteredData.map(function(item) {
+                return {
+                    name: item.name,
+                    y: item.y
+                };
+            });
+
+            // Create the updated chart
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Date-wise Counts'
+                },
+                xAxis: {
+                    type: 'category'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Count'
+                    }
+                },
+                series: [{
+                    name: 'Count',
+                    data: seriesData
+                }]
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create the initial chart
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Date-wise Counts'
+                },
+                xAxis: {
+                    type: 'category'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Count'
+                    }
+                },
+                series: [{
+                    name: 'Count',
+                    data: originalData
+                }]
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+from flask import Flask, render_template, jsonify
+import pandas as pd
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    # Read the CSV file using pandas
+    data = pd.read_csv('data.csv')
+
+    # Convert the timestamp column to datetime format
+    data['timestamp'] = pd.to_datetime(data['timestamp'], format='%d/%b/%Y:%H:%M:%S')
+
+    # Count the occurrences of each date
+    date_counts = data['timestamp'].dt.date.value_counts().sort_index()
+
+    # Prepare the original data for Highcharts
+    original_data = [{'name': str(date), 'y': count} for date, count in date_counts.items()]
+
+    # Pass the original data to the template
+    return render_template('chart.html', original_data=original_data)
+
+if __name__ == '__main__':
+    app.run()
